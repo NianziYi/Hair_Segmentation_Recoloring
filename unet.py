@@ -300,6 +300,7 @@ class UNet(nn.Module):
 
         self.down_blocks = []
         self.up_blocks = []
+        self.upsample = nn.Upsample(scale_factor=0.5)
 
         # create encoder path
         for i in range(self.n_blocks):
@@ -377,6 +378,7 @@ class UNet(nn.Module):
             x = module(before_pool, x)
 
         x = self.conv_final(x)
+        x = self.upsample(x)
 
         return x
 
