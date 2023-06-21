@@ -21,6 +21,7 @@ class DataLoaderSegmentation(Dataset):
     def __getitem__(self, idx):
         img_path = self.img_files[idx]
         mask_path = self.mask_files[idx]
+        # print(idx)
         
         
         img = mpimg.imread(img_path)/255
