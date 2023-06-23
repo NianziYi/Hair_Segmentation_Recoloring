@@ -30,7 +30,7 @@ class DataLoaderSegmentation(Dataset):
         mask = mpimg.imread(mask_path)
         mask = torch.from_numpy(mask).float()
         
-        return img, mask
+        return img, mask[:,:,0]
     
     def __len__(self):
         return len(self.img_files)
