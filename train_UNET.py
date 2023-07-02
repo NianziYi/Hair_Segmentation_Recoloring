@@ -76,6 +76,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
     start = time.time()
 
     train_loss, valid_loss = [], []
+    accuracy = []
 
     best_acc = 0.0
 
@@ -139,13 +140,22 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
             print('{} Loss: {:.4f} Acc: {}'.format(phase, epoch_loss, epoch_acc))
             
-            train_loss.append(epoch_loss) if phase=='train' else valid_loss.append(epoch_loss)
+            train_loss.append(epoch_loss), accuracy.append(epoch_acc) if phase=='train' else valid_loss.append(epoch_loss)
         
     time_elapsed = time.time() - start
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))   
             
-    return train_loss, valid_loss
+    return train_loss, valid_loss, accuracy
+
+train_loss, valid_loss, accuracy = train(model, train_loader, valid_loader, loss_fn, opt, acc_fn, epochs)
 
 #To save the model
 PATH = 'network.pth'
 torch.save(model.state_dict(), PATH)
+
+# Save training measures
+f = open("results/training_measures.csv", "w")
+f.write("{},{},{}\n".format("Train Loss", "Valid Loss","Train Acc"))
+for x in zip(train_loss, valid_loss, accuracy):
+    f.write("{},{},{}\n".format(x[0], x[1], x[2]))
+f.close()
