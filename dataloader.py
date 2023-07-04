@@ -12,11 +12,11 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 class DataLoaderSegmentation(Dataset):
     def __init__(self, path):
         super(DataLoaderSegmentation, self).__init__()
-        self.img_files = glob.glob(os.path.join(path,'input_image','*.jpg')) 
-        self.mask_files = glob.glob(os.path.join(path,'hair_mask','*.png')) 
+        img_files = glob.glob(os.path.join(path,'input_image','*.jpg'))
+        mask_files = glob.glob(os.path.join(path,'hair_mask','*.png'))  
         
-        self.img_files = natsort.natsorted(self.img_files)
-        self.mask_files = natsort.natsorted(self.mask_files)
+        self.img_files = sorted(img_files, key=lambda i:int(os.path.splitext(os.path.basename(i))[0]))  
+        self.mask_files = sorted(mask_files, key=lambda i:int(os.path.splitext(os.path.basename(i))[0].split('_')[0]))  
 
     def __getitem__(self, idx):
         img_path = self.img_files[idx]
