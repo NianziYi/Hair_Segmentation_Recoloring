@@ -297,6 +297,7 @@ class UNet(nn.Module):
         self.conv_mode = conv_mode
         self.dim = dim
         self.up_mode = up_mode
+        self.sigmoid = nn.Sigmoid()
 
         self.down_blocks = []
         self.up_blocks = []
@@ -379,6 +380,7 @@ class UNet(nn.Module):
 
         x = self.conv_final(x)
         x = self.upsample(x)
+        x = self.sigmoid(x)
 
         return x
 

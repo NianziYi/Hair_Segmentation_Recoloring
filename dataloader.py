@@ -34,6 +34,3 @@ class DataLoaderSegmentation(Dataset):
     
     def __len__(self):
         return len(self.img_files)
-    
-# Load data
-dataset = DataLoaderSegmentation("dataset_2")

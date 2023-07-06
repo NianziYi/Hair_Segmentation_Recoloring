@@ -1,30 +1,11 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from dataloader import dataset
 from unet import UNet
 import os
 import time
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-
-batch_size = 5
-epochs = 10
-lr = 0.001
-
-# Generate training, validation and test datasets
-# random split
-train_set_size = int(len(dataset)*0.6)
-valid_set_size = int(len(dataset)*0.2)
-test_set_size = len(dataset)-train_set_size-valid_set_size
-train_set, valid_set, test_set = torch.utils.data.random_split(dataset, [train_set_size, valid_set_size, test_set_size])
-
-# start to load from customized DataSet object
-# bring batch size, iterations and epochs together
-batch_size = 5
-train_loader = DataLoader(train_set,batch_size,shuffle=False,drop_last=True,pin_memory=False)
-valid_loader = DataLoader(valid_set,batch_size,shuffle=False,drop_last=True,pin_memory=False)
-test_loader = DataLoader(test_set,batch_size,shuffle=False,drop_last=True,pin_memory=False)
+from hyperparameters import *
 
 
 model = UNet(in_channels=3,
@@ -35,9 +16,9 @@ model = UNet(in_channels=3,
             normalization='batch',
             conv_mode='same',
             dim=2)
-x = torch.randn(size=(3, 3, 1024,1024), dtype=torch.float32)
-with torch.no_grad():
-    out = model(x)
+#x = torch.randn(size=(3, 3, 1024,1024), dtype=torch.float32)
+#with torch.no_grad():
+#    out = model(x)
 
 n_iters = int(train_set_size / batch_size)
 iterations = epochs * n_iters
@@ -53,23 +34,35 @@ loss_fn = nn.BCEWithLogitsLoss()
 opt = torch.optim.Adam(model.parameters(), lr)
 
 
-def out_to_mask(outpus_squeezed):
+def out_to_mask(outputs_squeezed):
     #outpus shape [batch,512,512]
-    sigmoid =nn.Sigmoid()
-    mask = sigmoid(outpus_squeezed)
-    mask[mask<=0.5] = 0
-    mask[mask>0.5] = 1
+    # sigmoid =nn.Sigmoid()
+    # mask = sigmoid(outpus_squeezed)
+    outputs_squeezed[outputs_squeezed<=0.5] = 0
+    outputs_squeezed[outputs_squeezed>0.5] = 1
     
-    return mask
+    return outputs_squeezed
 
 
-def acc_fn(outputs, y):
+
+def acc_fn(outputs, y, batch_size):
+    '''
+    outputs: [batch, 1 , H, W]
+    y: [batch, H, W]
+    '''
+    _, H, W = y.shape
     mask = out_to_mask(outputs)
-    num_samples = len(y)
-    equality_matrix = torch.eq(mask, y)
-    num_corr_pred = equality_matrix.sum()
-    acc = num_corr_pred/num_samples
-    return acc   
+    num_pixels = H * W
+    
+    acc = torch.zeros([batch_size, 1])
+    
+    for i in range(batch_size):
+        equality_matrix = torch.eq(mask, y)
+        num_corr_pred = equality_matrix.sum()
+        acc_num = (num_corr_pred/num_pixels).item()
+        acc[i] = acc_num
+    acc_avg = acc.sum()/batch_size
+    return acc_avg.item()  
 
 
 def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
@@ -125,7 +118,7 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
                         loss = loss_fn(outputs, y)
 
                 # stats - whatever is the phase
-                acc = acc_fn(outputs, y)
+                acc = acc_fn(outputs, y, batch_size)
 
                 running_acc  += acc*dataloader.batch_size
                 running_loss += loss*dataloader.batch_size 
