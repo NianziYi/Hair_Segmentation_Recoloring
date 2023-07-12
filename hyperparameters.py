@@ -3,10 +3,10 @@ from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
 
-
+torch.manual_seed(0)
 batch_size = 5
 lr = 0.001
-epochs = 3
+epochs = 20
 
 # Load data
 dataset = DataLoaderSeg("dataset_2")
@@ -24,11 +24,11 @@ train_loader = DataLoader(train_set,batch_size,shuffle=False,drop_last=True,pin_
 valid_loader = DataLoader(valid_set,batch_size,shuffle=False,drop_last=True,pin_memory=False)
 test_loader = DataLoader(test_set,batch_size,shuffle=False,drop_last=True,pin_memory=False)
 
-def out_to_mask(outpus_squeezed):
-    #outpus shape [batch,512,512]
-    sigmoid =nn.Sigmoid()
-    mask = sigmoid(outpus_squeezed)
-    mask[mask<=0.5] = 0
-    mask[mask>0.5] = 1
+def out_to_mask(outputs_squeezed):
+    # outpus shape [batch,512,512]
+    # sigmoid =nn.Sigmoid()
+    # mask = sigmoid(outpus_squeezed)
+    outputs_squeezed[outputs_squeezed<=0.5] = 0
+    outputs_squeezed[outputs_squeezed>0.5] = 1
     
-    return mask
+    return outputs_squeezed

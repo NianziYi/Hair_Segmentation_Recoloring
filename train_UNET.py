@@ -3,8 +3,8 @@ import torch.nn as nn
 from unet import UNet
 import os
 import time
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+# import matplotlib.pyplot as plt
+# import matplotlib.image as mpimg
 from hyperparameters import *
 
 
@@ -23,8 +23,7 @@ model = UNet(in_channels=3,
 n_iters = int(train_set_size / batch_size)
 iterations = epochs * n_iters
 step_size = 2*n_iters
-model_name ="{}epochs_lr{}_step{}".format(epochs, lr, step_size)
-save_PATH = './model_name'
+save_PATH = f'./results/{epochs}epochs_{lr}lr_{batch_size}batch'
 if not os.path.exists(save_PATH):
     os.mkdir(save_PATH)
 
@@ -57,7 +56,7 @@ def acc_fn(outputs, y, batch_size):
     acc = torch.zeros([batch_size, 1])
     
     for i in range(batch_size):
-        equality_matrix = torch.eq(mask, y)
+        equality_matrix = torch.eq(mask[i], y[i])
         num_corr_pred = equality_matrix.sum()
         acc_num = (num_corr_pred/num_pixels).item()
         acc[i] = acc_num
@@ -75,8 +74,8 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
     for epoch in range(epochs):
     
-        print('Epoch {}/{}'.format(epoch, epochs - 1))
-        print('-' * 10)
+        # print('Epoch {}/{}'.format(epoch, epochs - 1))
+        # print('-' * 10)
 
         for phase in ['train', 'valid']:
             if phase == 'train':
@@ -93,6 +92,8 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
 
             # iterate over data
             for x, y in dataloader:
+                # x = x.cuda()
+                # y = y.cuda()
                 x = torch.permute(x, (0, 3, 2, 1))
                 step += 1
 
@@ -123,31 +124,31 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs=1):
                 running_acc  += acc*dataloader.batch_size
                 running_loss += loss*dataloader.batch_size 
 
-                if step % 10 == 0:
+                # if step % 10 == 0:
                     # clear_output(wait=True)
-                    print('Current step: {}  Loss: {}  Acc: {}  AllocMem (Mb): {}'.format(step, loss, acc, torch.cuda.memory_allocated()/1024/1024))
+                    # print('Current step: {}  Loss: {}  Acc: {}  AllocMem (Mb): {}'.format(step, loss, acc, torch.cuda.memory_allocated()/1024/1024))
                     # print(torch.cuda.memory_summary())
 
             epoch_loss = running_loss / len(dataloader.dataset)
             epoch_acc = running_acc / len(dataloader.dataset)
 
-            print('{} Loss: {:.4f} Acc: {}'.format(phase, epoch_loss, epoch_acc))
+            # print('{} Loss: {:.4f} Acc: {}'.format(phase, epoch_loss, epoch_acc))
             
             train_loss.append(epoch_loss), accuracy.append(epoch_acc) if phase=='train' else valid_loss.append(epoch_loss)
         
     time_elapsed = time.time() - start
-    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))   
+    # print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))   
             
     return train_loss, valid_loss, accuracy
 
 train_loss, valid_loss, accuracy = train(model, train_loader, valid_loader, loss_fn, opt, acc_fn, epochs)
 
 #To save the model
-PATH = 'network.pth'
+PATH = save_PATH + '/network.pth'
 torch.save(model.state_dict(), PATH)
 
 # Save training measures
-f = open("results/training_measures.csv", "w")
+f = open(save_PATH + "/training_measures.csv", "w")
 f.write("{},{},{}\n".format("Train Loss", "Valid Loss","Train Acc"))
 for x in zip(train_loss, valid_loss, accuracy):
     f.write("{},{},{}\n".format(x[0], x[1], x[2]))
