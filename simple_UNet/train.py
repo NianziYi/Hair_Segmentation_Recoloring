@@ -30,10 +30,6 @@ model = model.float()
 loss_fn = nn.BCEWithLogitsLoss()
 opt = torch.optim.Adam(model.parameters(), lr)
 
-model = model.float()
-loss_fn = nn.BCEWithLogitsLoss()
-opt = torch.optim.Adam(model.parameters(), lr)
-
 def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs):
 
     train_loss, valid_loss, accuracy = [], [], []
@@ -57,7 +53,10 @@ def train(model, train_dl, valid_dl, loss_fn, optimizer, acc_fn, epochs):
 
             # iterate over data
             for x, y in dataloader:
-                x = torch.permute(x, (0, 3, 2, 1))
+                # x = torch.permute(x, (0, 3, 2, 1))
+                # x = torch.permute(x, (0, 3, 1, 2))
+                x = x.permute(0,3,1,2)
+
                 step += 1
 
                 # forward pass
