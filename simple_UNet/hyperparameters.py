@@ -9,7 +9,8 @@ lr = 0.001
 epochs = 20
 
 # Load data
-dataset_PATH = r"D:\Uni\SS23\Praktikum\Hair_Segmentation_Recoloring\dataset_2"
+#dataset_PATH = r"D:\Uni\SS23\Praktikum\Hair_Segmentation_Recoloring\dataset_2"
+dataset_PATH = r"/Users/nianziyi/Desktop/Hair_Segmentation_Recoloring/dataset_2"
 dataset = DataLoaderSeg(dataset_PATH)
 
 # Generate training, validation and test datasets

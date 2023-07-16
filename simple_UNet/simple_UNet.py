@@ -14,10 +14,15 @@ class BaseConv(nn.Module):
                                stride)
         self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size,
                                padding, stride)
+        self.batch_norm = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
-        x = self.act(self.conv1(x))
-        x = self.act(self.conv2(x))
+        x = self.conv1(x)
+        x = self.batch_norm(x)
+        x = self.act(x)
+        x = self.conv2(x)
+        x = self.batch_norm(x)
+        x = self.act(x)
         return x
 
 
