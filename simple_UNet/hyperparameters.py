@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 torch.manual_seed(0)
-batch_size = 5
+batch_size = 20
 lr = 0.001
 epochs = 20
 
